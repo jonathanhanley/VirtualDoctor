@@ -1,9 +1,25 @@
 # VirtualDoctor
 
+### Setup instructions
+1.     git clone https://github.com/jonathanhanley/VirtualDoctor.git
+2.     cd VirtualDoctor
+3.     python3 -m venv
+4.     source venv/bin/active
+5.     pip install -r requirements.txt
+6.     python manage.py test
+7.     python manage.py runserver
+
+### Credentials - Local only.
+| Account Type        | Username           | Password           |
+| ------------- |:-------------:| :-------------:| 
+| Admin    | admin | admin |
+| User    | testemail@gmail.com | MyTestPassword123 |
+
+
 ### Urls
 | Page        | Url           |
 | ------------- |:-------------:| 
-| Authentication Documentation     | [Postman](https://documenter.getpostman.com/view/11213399/UV5c9v2K) | 
+| Authentication Documentation (local)     | [Postman](https://documenter.getpostman.com/view/11213399/UV5c9v2K) | 
 
 
 ### TODO
