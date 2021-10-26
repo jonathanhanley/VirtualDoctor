@@ -10,18 +10,24 @@ on:
 jobs:
 
   build:
-    name: Build
+    name: Test & Deploy
     runs-on: ubuntu-latest
     steps:
-    - name: executing remote ssh commands using password
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
-        script: |
-          cd VirtualDoctor
-          git pull
-          docker-compose down
-          docker-compose up -d --build
+      - name: Test
+      - uses: actions/checkout@v2
+            - run: docker build .
+            - run: docker-compose up -d --build
+            - run: docker-compose exec -T web python manage.py test
+            - run: docker-compose down
+      - name: deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd VirtualDoctor
+            git pull
+            docker-compose down
+            docker-compose up -d --build
