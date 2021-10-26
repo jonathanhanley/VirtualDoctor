@@ -38,4 +38,4 @@ jobs:
     name: Output
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Deployed to {{ secrets.HOST }}
+      - run: echo "Deployed to {{ secrets.HOST }}"
