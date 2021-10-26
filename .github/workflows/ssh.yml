@@ -12,7 +12,6 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - run: docker build .
       - run: docker-compose up -d --build
       - run: docker-compose exec -T web python manage.py test
       - run: docker-compose down
