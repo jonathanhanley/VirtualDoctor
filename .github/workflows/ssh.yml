@@ -33,3 +33,9 @@ jobs:
           git pull
           docker-compose down
           docker-compose up -d --build
+  output:
+    needs: [build]
+    name: Output
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Deployed to {{ secrets.HOST }}
