@@ -11,9 +11,10 @@ jobs:
   test:
     name: Test
     runs-on: ubuntu-latest
-    uses: actions/checkout@v2
     steps:
-      - run: docker build .
+      - name: Test
+      uses: actions/checkout@v2xs
+        - run: docker build .
 #      - run: docker-compose up -d --build
 #      - run: docker-compose exec -T web python manage.py test
 #      - run: docker-compose down
