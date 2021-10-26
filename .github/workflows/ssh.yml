@@ -11,12 +11,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Test
-         uses: actions/checkout@v2xs
+      - uses: actions/checkout@v2
       - run: docker build .
-#      - run: docker-compose up -d --build
-#      - run: docker-compose exec -T web python manage.py test
-#      - run: docker-compose down
+      - run: docker-compose up -d --build
+      - run: docker-compose exec -T web python manage.py test
+      - run: docker-compose down
   build:
     needs: [test]
     name: Deploy
