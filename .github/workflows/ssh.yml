@@ -8,26 +8,27 @@ on:
 
   workflow_dispatch:
 jobs:
-
-  build:
-    name: Test & Deploy
+  test:
+    name: Test
     runs-on: ubuntu-latest
     steps:
-      - name: Test
-      - uses: actions/checkout@v2
-            - run: docker build .
-            - run: docker-compose up -d --build
-            - run: docker-compose exec -T web python manage.py test
-            - run: docker-compose down
-      - name: deploy
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd VirtualDoctor
-            git pull
-            docker-compose down
-            docker-compose up -d --build
+      - run: docker build .
+      - run: docker-compose up -d --build
+      - run: docker-compose exec -T web python manage.py test
+      - run: docker-compose down
+  build:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - name: Deploying to ${{ secrets.HOST }}
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: |
+          cd VirtualDoctor
+          git pull
+          docker-compose down
+          docker-compose up -d --build
