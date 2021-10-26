@@ -11,10 +11,10 @@ on:
 
 
 jobs:
-  test_build:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - run: docker build .
-      - run: docker compose up
+      - run: echo "Docker container builds".
 
