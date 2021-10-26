@@ -1,4 +1,4 @@
-name: Build docker container
+name: Tests
 
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
@@ -16,5 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: docker build .
-      - run: echo "Docker container builds".
+      - run: docker-compose up -d -- build
+      - run: docker-compose exec web python manage.py test
+      - run: docker-compose down
 
