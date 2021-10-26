@@ -16,7 +16,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: docker build .
-      - run: docker-compose up -d -- build
+      - run: docker-compose up -d --build
       - run: docker-compose exec web python manage.py test
       - run: docker-compose down
 
