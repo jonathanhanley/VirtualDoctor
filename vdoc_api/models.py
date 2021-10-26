@@ -10,11 +10,12 @@ User = get_user_model()
 # Create your models here.
 class Consultant(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    code = models.CharField(max_length=5, null=False)
+    code = models.CharField(max_length=5, null=True, default="")
 
-    def save(self, force_insert=False, force_update=False, using=None,
-             update_fields=None):
+    def save(self, *args, **kwargs):
         self.code = self.generate_code()
+        super(Consultant, self).save(*args, **kwargs)
+
 
     def generate_code(self):
         string = f"{self.user.email} - {self.user.first_name} - {self.user.last_name} - {self.user.username}"
