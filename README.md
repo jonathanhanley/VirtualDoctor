@@ -3,11 +3,8 @@
 ### Setup instructions
 1.     git clone https://github.com/jonathanhanley/VirtualDoctor.git
 2.     cd VirtualDoctor
-3.     python3 -m venv venv
-4.     source venv/bin/active
-5.     pip install -r requirements.txt
-6.     python manage.py test
-7.     python manage.py runserver
+3.     docker build .
+4.     docker-compose up
 
 ### Credentials - Local only.
 | Account Type        | Username           | Password           |
@@ -32,7 +29,7 @@
     4. ~~Get User details~~
     5. ~~Logout~~
     
-4. Dockerized project
+4. ~~Dockerized project~~
     
 5. Questions DB:
     1. Create question
