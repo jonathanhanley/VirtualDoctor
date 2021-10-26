@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/VDoctor.iml" filepath="$PROJECT_DIR$/.idea/VDoctor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/VirtualDoctor.iml" filepath="$PROJECT_DIR$/.idea/VirtualDoctor.iml" />
     </modules>
   </component>
 </project>
