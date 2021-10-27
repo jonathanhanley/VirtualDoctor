@@ -32,6 +32,7 @@ class APIUser(APIView):
     def post(self, request):
         email = request.data.get('email')
         password = request.data.get('password')
+        code = request.data.get("code")
         username = email
         if not email:
             return Response(data={"message": "Email is required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -39,13 +40,17 @@ class APIUser(APIView):
         if not password:
             return Response(data={"message": "Password is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+        if not code:
+            return Response(data={"message": "Code is required"}, status=status.HTTP_400_BAD_REQUEST)
+
         if User.objects.filter(username=username) or User.objects.filter(username=username):
             return Response(data={"message": "That email already exists"}, status=status.HTTP_409_CONFLICT)
 
         user = User.objects.create_user(
             email=email,
             username=email,
-            password=password
+            password=password,
+            code=code,
         )
         serializer = UserSerializer(user)
 

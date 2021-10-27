@@ -15,10 +15,11 @@ class TokenSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    code = serializers.CharField(read_only=True)
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'password')
+        fields = ('email', 'username', 'code', 'password')
 
     def create(self, validated_data):
         user = super(UserSerializer, self).create(validated_data)

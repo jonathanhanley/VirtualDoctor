@@ -16,7 +16,7 @@ class TestLogin(APITestCase):
         User.objects.create_user(
             username='testuser',
             email='testuseremail@gmail.com',
-            password='testpassword1234'
+            password='testpassword1234',
         )
 
     def test_valid(self):
@@ -120,7 +120,8 @@ class TestUser(TestCase):
         user = User.objects.create_user(
             username='testuseremail@gmail.com',
             email='testuseremail@gmail.com',
-            password='testpassword1234'
+            password='testpassword1234',
+            code='abc12',
         )
         token = Token.objects.create(
             user=user
@@ -130,6 +131,7 @@ class TestUser(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('email'), 'testuseremail@gmail.com')
         self.assertEqual(response.data.get('username'), 'testuseremail@gmail.com')
+        self.assertEqual(response.data.get('code'), 'abc12')
         self.assertIsNone(response.data.get('password'))
 
     def test_valid_register(self):
@@ -137,12 +139,14 @@ class TestUser(TestCase):
         data = {
             "email": "testuseremail@gmail.com",
             "password": "MyTestPassword",
+            "code": "abc12",
         }
         client = APIClient()
         response = client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data.get('email'), 'testuseremail@gmail.com')
         self.assertEqual(response.data.get('username'), 'testuseremail@gmail.com')
+        self.assertEqual(response.data.get('code'), 'abc12')
         self.assertIsNone(response.data.get('password'))
 
     def test_email_in_use(self):
@@ -150,6 +154,7 @@ class TestUser(TestCase):
         data = {
             "email": "testuseremail@gmail.com",
             "password": "MyTestPassword",
+            "code": "abc12",
         }
         client = APIClient()
         response = client.post(url, data, format='json')
@@ -166,6 +171,7 @@ class TestUser(TestCase):
         url = reverse('api-user')
         data = {
             "password": "MyTestPassword",
+            "code": "abc12",
         }
         client = APIClient()
         response = client.post(url, data, format='json')
@@ -176,11 +182,23 @@ class TestUser(TestCase):
         url = reverse('api-user')
         data = {
             "email": "testuseremail@gmail.com",
+            "code": "abc12",
         }
         client = APIClient()
         response = client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(response.data.get("message"), "Password is required")
+
+    def test_code_missing(self):
+        url = reverse('api-user')
+        data = {
+            "email": "testuseremail@gmail.com",
+            "password": "MyPassword1234",
+        }
+        client = APIClient()
+        response = client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data.get("message"), "Code is required")
 
     def test_valid_delete(self):
         url = reverse('api-user')
@@ -188,7 +206,8 @@ class TestUser(TestCase):
         user = User.objects.create_user(
             username='testuser',
             email='testuseremail@gmail.com',
-            password='testpassword1234'
+            password='testpassword1234',
+            code="abc12"
         )
         token = Token.objects.create(
             user=user
