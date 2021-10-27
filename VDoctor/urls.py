@@ -20,4 +20,5 @@ from rest_framework.authtoken.views import obtain_auth_token
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('vdoc_api.urls'), name="vdoc_api"),
+    path('', include('vdoc_ui.urls'), name="vdoc_ui"),
 ]
