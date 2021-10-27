@@ -23,3 +23,17 @@ class Consultant(models.Model):
         string = f"{self.user.email} - {self.user.first_name} - {self.user.last_name} - {self.user.username}"
         code = hashlib.sha256(string.encode('utf-8')).hexdigest()
         return code[:5]
+
+
+class QuestionSet(models.Model):
+    consultant = models.ForeignKey('Consultant', on_delete=models.CASCADE)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    description = models.TextField(max_length=10000, null=True, blank=True)
+    created = models.DateField(auto_now=True)
+
+
+class Question(models.Model):
+    set = models.ForeignKey('QuestionSet', on_delete=models.CASCADE)
+    text = models.TextField(max_length=1028, null=True, blank=True)
+    hint = models.TextField(max_length=1028, null=True, blank=True)
+    next_question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True)
