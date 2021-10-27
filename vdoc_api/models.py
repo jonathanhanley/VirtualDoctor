@@ -37,3 +37,10 @@ class Question(models.Model):
     text = models.TextField(max_length=1028, null=True, blank=True)
     hint = models.TextField(max_length=1028, null=True, blank=True)
     next_question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True)
+
+
+class Answer(models.Model):
+    question = models.ForeignKey('Question', on_delete=models.CASCADE)
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
+    text = models.TextField(max_length=1028, null=True, blank=True)
+

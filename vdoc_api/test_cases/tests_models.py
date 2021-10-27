@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from vdoc_api.models import Consultant, QuestionSet, Question
+from vdoc_api.models import Consultant, QuestionSet, Question, Answer
 
 User = get_user_model()
 
@@ -162,4 +162,55 @@ class TestQuestion(TestCase):
         self.question.next_question = next_q
         self.question.save()
         self.assertEqual(self.question.next_question, next_q)
+
+
+class TestAnswer(TestCase):
+
+    def setUp(self) -> None:
+        self.user = User.objects.create_user(
+            email="testuser@gmail.com",
+            username="testuser@gmail.com",
+            first_name="test",
+            last_name="user",
+            code="abc12"
+        )
+        user = User.objects.create_user(
+            email="testconsultant@gmail.com",
+            username="testconsultant@gmail.com",
+            first_name="test",
+            last_name="consultant",
+        )
+        self.consultant = Consultant.objects.create(
+            user=user
+        )
+        self.consultant.save()
+        self.question_set = QuestionSet.objects.create(
+            consultant=self.consultant,
+            name="Test Question Set",
+            description="A set of questions used for testing",
+        )
+        self.question_set.save()
+        self.question = Question.objects.create(
+            set=self.question_set,
+            text="How do you like my test question?",
+            hint="The answer is very much so...",
+        )
+        self.question.save()
+        self.answer = Answer.objects.create(
+            user=self.user,
+            question=self.question,
+            text="Yes I like your test question..."
+        )
+        self.answer.save()
+
+    def test_answer_question(self):
+        self.assertEqual(self.answer.question, self.question)
+
+    def test_answer_user(self):
+        self.assertEqual(self.user, self.answer.user)
+
+    def test_answer_text(self):
+        self.assertEqual("Yes I like your test question...", self.answer.text)
+        self.assertNotEqual("No I do not like your test question...", self.answer.text)
+
 
