@@ -4,4 +4,4 @@ from datetime import datetime, timedelta
 
 # Create your views here.
 def landing(request):
-    return HttpResponse(f"UI {datetime.now() + timedelta(hours=1)}")
+    return HttpResponse(f"Server Time {datetime.now() + timedelta(hours=0)}")
