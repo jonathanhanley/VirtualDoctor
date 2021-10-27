@@ -43,3 +43,22 @@ class TestConsultant(TestCase):
         self.assertEqual(self.consultant.code, '2ec16')
         self.assertEqual(self.consultant1.code, 'f12ab')
         self.assertNotEqual(self.consultant.code, self.consultant1.code)
+
+
+class TestCustomUser(TestCase):
+    def setUp(self) -> None:
+        user = User.objects.create_user(
+            email="testuser@gmail.com",
+            username="testuser@gmail.com",
+            first_name="test",
+            last_name="user",
+            code="abc12"
+        )
+
+    def test_attributes(self):
+        user = User.objects.get(code="abc12")
+        self.assertEqual(user.code, "abc12")
+        self.assertEqual(user.email, "testuser@gmail.com")
+        self.assertEqual(user.username, "testuser@gmail.com")
+        self.assertEqual(user.first_name, "test")
+        self.assertEqual(user.last_name, "user")
