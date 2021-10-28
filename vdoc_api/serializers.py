@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 
-from vdoc_api.models import Consultant
+from vdoc_api.models import Consultant, QuestionSet
 
 User = get_user_model()
 
@@ -50,3 +50,8 @@ class ConsultantSerializer(serializers.ModelSerializer):
         pass
 
 
+class QuestionSetSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = QuestionSet
+        fields = ('consultant', 'name', 'description', 'created')

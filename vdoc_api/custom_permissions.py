@@ -20,3 +20,8 @@ class ConsultantPermissions(BasePermission):
                 and Consultant.objects.filter(user=request.user):
             return True
         return False
+
+
+class QuestionSetPermissions(ConsultantPermissions):
+    SAFE_METHODS = ['GET']
+

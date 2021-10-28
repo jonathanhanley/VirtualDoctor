@@ -5,9 +5,9 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
-from vdoc_api.custom_permissions import UserPermissions, ConsultantPermissions
-from vdoc_api.models import Consultant
-from vdoc_api.serializers import UserSerializer, ConsultantSerializer
+from vdoc_api.custom_permissions import UserPermissions, ConsultantPermissions, QuestionSetPermissions
+from vdoc_api.models import Consultant, QuestionSet
+from vdoc_api.serializers import UserSerializer, ConsultantSerializer, QuestionSetSerializer
 
 User = get_user_model()
 
@@ -109,4 +109,19 @@ class APIConsultant(APIView):
         user = request.user
         user.delete()
         return Response(data={"message": "Account deleted."}, status=status.HTTP_204_NO_CONTENT)
+
+
+class APIQuestionSet(APIView):
+    permission_classes = [QuestionSetPermissions]
+
+    def get(self, request):
+        data = request.query_params
+        if data.get("id"):
+            question_set = QuestionSet.objects.filter(id=data.get("id"))
+            if len(question_set) > 0:
+                serializer = QuestionSetSerializer(question_set[0])
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({"message": "No question set was found matching that ID"}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({"message": "ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 

@@ -1,3 +1,5 @@
+import datetime
+
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -5,7 +7,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase, APIClient
 
-from vdoc_api.models import Consultant
+from vdoc_api.models import Consultant, QuestionSet
 
 User = get_user_model()
 
@@ -367,6 +369,81 @@ class TestConsultant(TestCase):
         response = client.delete(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
         self.assertEqual(response.data.get("detail"), "Invalid token.")
+
+
+class TestQuestionSet(TestCase):
+
+    def test_valid_get(self):
+        url = reverse('api-question-set')
+        client = APIClient()
+        user = User.objects.create_user(
+            username='testuseremail@gmail.com',
+            email='testuseremail@gmail.com',
+            password='testpassword1234',
+            first_name='test',
+            last_name='consultant',
+        )
+        consultant = Consultant.objects.create(user=user)
+        consultant.save()
+        question_set = QuestionSet.objects.create(
+            consultant=consultant,
+            name="Test Question Set",
+            description="This is a test question set",
+        )
+        question_set.save()
+        data = {'id': question_set.id}
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get("consultant"), consultant.id)
+        self.assertEqual(response.data.get("name"), "Test Question Set")
+        self.assertEqual(response.data.get("description"), "This is a test question set")
+        self.assertEqual(response.data.get("created"), f"{datetime.datetime.today().date()}")
+
+    def test_get_no_id(self):
+        url = reverse('api-question-set')
+        client = APIClient()
+        user = User.objects.create_user(
+            username='testuseremail@gmail.com',
+            email='testuseremail@gmail.com',
+            password='testpassword1234',
+            first_name='test',
+            last_name='consultant',
+        )
+        consultant = Consultant.objects.create(user=user)
+        consultant.save()
+        question_set = QuestionSet.objects.create(
+            consultant=consultant,
+            name="Test Question Set",
+            description="This is a test question set",
+        )
+        question_set.save()
+        data = {}
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(response.data.get("message"), "ID is required")
+
+    def test_get_invalid_id(self):
+        url = reverse('api-question-set')
+        client = APIClient()
+        user = User.objects.create_user(
+            username='testuseremail@gmail.com',
+            email='testuseremail@gmail.com',
+            password='testpassword1234',
+            first_name='test',
+            last_name='consultant',
+        )
+        consultant = Consultant.objects.create(user=user)
+        consultant.save()
+        question_set = QuestionSet.objects.create(
+            consultant=consultant,
+            name="Test Question Set",
+            description="This is a test question set",
+        )
+        question_set.save()
+        data = {"id": -1}
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(response.data.get("message"), "No question set was found matching that ID")
 
 
 
