@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework.authtoken.models import Token
 from rest_framework import serializers
+from django.db import models
 
 from vdoc_api.models import Consultant, QuestionSet
 
@@ -51,7 +52,15 @@ class ConsultantSerializer(serializers.ModelSerializer):
 
 
 class QuestionSetSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(max_length=255)
+    description = serializers.CharField(max_length=10000)
 
     class Meta:
         model = QuestionSet
         fields = ('consultant', 'name', 'description', 'created')
+
+    def create(self, validated_data):
+        c = validated_data.get("consultant")
+        consultant = Consultant.objects.get(id=c)
+        validated_data["consultant"] = consultant
+        return QuestionSet.objects.create(**validated_data)

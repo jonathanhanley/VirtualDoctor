@@ -373,20 +373,40 @@ class TestConsultant(TestCase):
 
 class TestQuestionSet(TestCase):
 
+    def setUp(self) -> None:
+        user = User.objects.create_user(
+            username='testuser',
+            email='testuseremail@gmail.com',
+            password='testpassword1234',
+            code="12345"
+        )
+        token = Token.objects.create(
+            user=user
+        )
+        token.save()
+        self.user_token = token
+        user = User.objects.create_user(
+            username='testconsultant',
+            email='testconsultant@gmail.com',
+            password='testpassword1234'
+        )
+        self.consultant = Consultant.objects.create(
+            user=user,
+        )
+        self.consultant.save()
+        token = Token.objects.create(
+            user=user
+        )
+        token.save()
+        self.consultant_token = token
+
     def test_valid_get(self):
         url = reverse('api-question-set')
         client = APIClient()
-        user = User.objects.create_user(
-            username='testuseremail@gmail.com',
-            email='testuseremail@gmail.com',
-            password='testpassword1234',
-            first_name='test',
-            last_name='consultant',
-        )
-        consultant = Consultant.objects.create(user=user)
-        consultant.save()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.user_token.key)
+
         question_set = QuestionSet.objects.create(
-            consultant=consultant,
+            consultant=self.consultant,
             name="Test Question Set",
             description="This is a test question set",
         )
@@ -394,7 +414,7 @@ class TestQuestionSet(TestCase):
         data = {'id': question_set.id}
         response = client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data.get("consultant"), consultant.id)
+        self.assertEqual(response.data.get("consultant"), self.consultant.id)
         self.assertEqual(response.data.get("name"), "Test Question Set")
         self.assertEqual(response.data.get("description"), "This is a test question set")
         self.assertEqual(response.data.get("created"), f"{datetime.datetime.today().date()}")
@@ -402,17 +422,9 @@ class TestQuestionSet(TestCase):
     def test_get_no_id(self):
         url = reverse('api-question-set')
         client = APIClient()
-        user = User.objects.create_user(
-            username='testuseremail@gmail.com',
-            email='testuseremail@gmail.com',
-            password='testpassword1234',
-            first_name='test',
-            last_name='consultant',
-        )
-        consultant = Consultant.objects.create(user=user)
-        consultant.save()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.user_token.key)
         question_set = QuestionSet.objects.create(
-            consultant=consultant,
+            consultant=self.consultant,
             name="Test Question Set",
             description="This is a test question set",
         )
@@ -425,17 +437,9 @@ class TestQuestionSet(TestCase):
     def test_get_invalid_id(self):
         url = reverse('api-question-set')
         client = APIClient()
-        user = User.objects.create_user(
-            username='testuseremail@gmail.com',
-            email='testuseremail@gmail.com',
-            password='testpassword1234',
-            first_name='test',
-            last_name='consultant',
-        )
-        consultant = Consultant.objects.create(user=user)
-        consultant.save()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.user_token.key)
         question_set = QuestionSet.objects.create(
-            consultant=consultant,
+            consultant=self.consultant,
             name="Test Question Set",
             description="This is a test question set",
         )
@@ -445,5 +449,29 @@ class TestQuestionSet(TestCase):
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data.get("message"), "No question set was found matching that ID")
 
+    def test_valid_post(self):
+        url = reverse('api-question-set')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.consultant_token.key)
+        data = {
+            "name": "This is my test set",
+            "description": "This is my test set description",
+        }
+        response = client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data.get("consultant"), self.consultant.id)
+        self.assertEqual(response.data.get("name"), 'This is my test set')
+        self.assertEqual(response.data.get("description"), 'This is my test set description')
+        self.assertEqual(len(QuestionSet.objects.all()), 1)
 
+    def test_post_by_user(self):
+        url = reverse('api-question-set')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.user_token.key)
+        data = {
+            "name": "This is my test set",
+            "description": "This is my test set description",
+        }
+        response = client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 

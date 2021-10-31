@@ -125,3 +125,22 @@ class APIQuestionSet(APIView):
 
         return Response({"message": "ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+    def post(self, request):
+        data = request.data
+        data["consultant"] = Consultant.objects.get(user=request.user).id
+        name = data.get("name")
+        description = data.get("description")
+        if not name:
+            return Response({"message": "Name is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not description:
+             return Response({"message": "Description is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = QuestionSetSerializer(request.data)
+        serializer.create(request.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+
+
+
