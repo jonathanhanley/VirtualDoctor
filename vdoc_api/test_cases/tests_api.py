@@ -522,12 +522,25 @@ class TestQuestion(TestCase):
             hint="Yes/ No"
         )
         question.save()
+        question1 = Question.objects.create(
+            set=question_set,
+            text="How are ye doing a bit of validating?",
+            hint="Yes/ No"
+        )
+        question1.save()
+        question.next_question = question1
+        question.save()
         data = {'id': question.id}
         response = client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get("set"), question_set.id)
         self.assertEqual(response.data.get("text"), question.text)
         self.assertEqual(response.data.get("hint"), question.hint)
+        self.assertEqual(response.data.get("next_question"), question1.id)
+
+        data = {'id': question1.id}
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.data.get("next_question"), None)
 
     def test_get_no_id(self):
         url = reverse('api-question')
@@ -564,3 +577,21 @@ class TestQuestion(TestCase):
         response = client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
         self.assertEqual(response.data.get("message"), "No question set was found matching that ID")
+
+    def test_valid_post(self):
+        url = reverse('api-question')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.consultant_token.key)
+        question_set = QuestionSet.objects.create(
+            consultant=self.consultant,
+            name="Test Question Set",
+            description="This is a test question set",
+        )
+        question_set.save()
+        data = {
+            "set": question_set.id,
+            "text": "Are ye doing a bit of requesting?",
+            "hint": "Yes/ No"
+        }
+        response = client.post(url, data, format='json')
+        print(response.data)

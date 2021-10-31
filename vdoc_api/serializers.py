@@ -67,14 +67,17 @@ class QuestionSetSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
-    # set = models.ForeignKey('QuestionSet', on_delete=models.CASCADE)
     text = models.TextField(max_length=1028, null=True, blank=True)
     hint = models.TextField(max_length=1028, null=True, blank=True)
-    # next_question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True)
 
     class Meta:
         model = Question
         fields = ('set', 'text', 'hint', 'next_question')
+
+    def create(self, validated_data):
+        s = validated_data.get("set")
+        validated_data["set"] = QuestionSet.objects.get(id=s)
+        return Question.objects.create(**validated_data)
 
 
 

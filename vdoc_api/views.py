@@ -155,5 +155,23 @@ class APIQuestion(APIView):
 
         return Response({"message": "ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+    def post(self, request):
+        data = request.data
+        set = data.get("set")
+        text = data.get("text")
+        hint = data.get("hint")
+        if not set:
+            return Response({"message": "Set is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not text:
+             return Response({"message": "Text is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        if not hint:
+            return Response({"message": "Hint is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = QuestionSerializer(request.data)
+        serializer.create(request.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 
