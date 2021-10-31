@@ -169,9 +169,20 @@ class APIQuestion(APIView):
         if not hint:
             return Response({"message": "Hint is required"}, status=status.HTTP_400_BAD_REQUEST)
 
+        prev_q = False
+        if request.data.get("prev_question"):
+            prev_q = request.data.get("prev_question")
+            request.data.pop("prev_question")
         serializer = QuestionSerializer(request.data)
-        serializer.create(request.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        q = serializer.create(request.data)
+        data = dict(serializer.data)
+        data["id"] = q.id
+        response = Response(data, status=status.HTTP_201_CREATED)
+        if prev_q:
+            pq = Question.objects.get(id=prev_q)
+            pq.next_question = q
+            pq.save()
+        return response
 
 
 

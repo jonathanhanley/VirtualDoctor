@@ -20,7 +20,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'code', 'password')
+        fields = ('id', 'email', 'username', 'code', 'password')
 
     def create(self, validated_data):
         user = super(UserSerializer, self).create(validated_data)
@@ -42,7 +42,7 @@ class ConsultantSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Consultant
-        fields = ('email', 'username', 'first_name', 'last_name', 'code', 'password')
+        fields = ('id', 'email', 'username', 'first_name', 'last_name', 'code', 'password')
 
     def create(self, validated_data):
         return Consultant.objects.create(**validated_data)
@@ -57,7 +57,7 @@ class QuestionSetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = QuestionSet
-        fields = ('consultant', 'name', 'description', 'created')
+        fields = ('id', 'consultant', 'name', 'description', 'created')
 
     def create(self, validated_data):
         c = validated_data.get("consultant")
@@ -67,17 +67,17 @@ class QuestionSetSerializer(serializers.ModelSerializer):
 
 
 class QuestionSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
     text = models.TextField(max_length=1028, null=True, blank=True)
     hint = models.TextField(max_length=1028, null=True, blank=True)
 
     class Meta:
         model = Question
-        fields = ('set', 'text', 'hint', 'next_question')
+        fields = ('id', 'set', 'text', 'hint', 'next_question')
 
     def create(self, validated_data):
         s = validated_data.get("set")
         validated_data["set"] = QuestionSet.objects.get(id=s)
         return Question.objects.create(**validated_data)
-
 
 

@@ -591,7 +591,22 @@ class TestQuestion(TestCase):
         data = {
             "set": question_set.id,
             "text": "Are ye doing a bit of requesting?",
-            "hint": "Yes/ No"
+            "hint": "Yes/ No",
         }
         response = client.post(url, data, format='json')
-        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data.get("set"), question_set.id)
+        self.assertEqual(response.data.get("text"), "Are ye doing a bit of requesting?")
+        self.assertEqual(response.data.get("hint"), "Yes/ No")
+        self.assertIsNone(response.data.get("next_question"))
+
+        qid = response.data.get("id")
+        data = {
+            "set": question_set.id,
+            "text": "Are ye doing a bit of requesting?",
+            "hint": "Yes/ No",
+            "prev_question": qid
+        }
+        response = client.post(url, data, format='json')
+        q = Question.objects.get(id=qid)
+        self.assertEqual(response.data.get("id"), q.next_question.id)
