@@ -610,3 +610,70 @@ class TestQuestion(TestCase):
         response = client.post(url, data, format='json')
         q = Question.objects.get(id=qid)
         self.assertEqual(response.data.get("id"), q.next_question.id)
+
+
+class TestAnswer(TestCase):
+
+    def setUp(self) -> None:
+        user = User.objects.create_user(
+            username='testuser',
+            email='testuseremail@gmail.com',
+            password='testpassword1234',
+            code="12345"
+        )
+        token = Token.objects.create(
+            user=user
+        )
+        token.save()
+        self.user_token = token
+        user = User.objects.create_user(
+            username='testconsultant',
+            email='testconsultant@gmail.com',
+            password='testpassword1234'
+        )
+        self.consultant = Consultant.objects.create(
+            user=user,
+        )
+        self.consultant.save()
+        self.question_set = QuestionSet.objects.create(
+            consultant=self.consultant,
+            name="Test Question Set",
+            description="This is a test question set",
+        )
+        self.question_set.save()
+        self.question = Question.objects.create(
+            set=self.question_set,
+            text="How are ye doing a bit of testing?",
+            hint="Yes/ No"
+        )
+        self.next_question = Question.objects.create(
+            set=self.question_set,
+            text="How are ye doing a bit of validating?",
+            hint="Yes/ No"
+        )
+        self.question.next_question = self.next_question
+        self.question.save()
+        token = Token.objects.create(
+            user=user
+        )
+        token.save()
+        self.consultant_token = token
+
+    def test_post(self):
+        url = reverse('api-answer')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.user_token.key)
+        data = {
+            "question": self.question.id,
+            "text": "yes",
+        }
+        response = client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data.get("next_q"), self.next_question.id)
+        data = {
+            "question": self.next_question.id,
+            "text": "yes",
+        }
+        response = client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNone(response.data.get("next_q"))

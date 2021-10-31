@@ -48,3 +48,22 @@ class QuestionSetPermissions(BasePermission):
 
 class QuestionPermissions(QuestionSetPermissions):
     SAFE_METHODS = []
+
+
+class AnswerPermissions(QuestionPermissions):
+    SAFE_METHODS = []
+
+    def has_permission(self, request, view):
+        allow = False
+        if request.method in self.SAFE_METHODS:
+            allow = True
+
+        if request.user and request.user.is_authenticated and \
+                (
+                    (
+                            User.objects.filter(id=request.user.id, code__isnull=False).exclude(code="")
+                            and request.method == "POST"
+                    )
+                ):
+            allow = True
+        return allow

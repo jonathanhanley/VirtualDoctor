@@ -5,9 +5,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
-from vdoc_api.custom_permissions import UserPermissions, ConsultantPermissions, QuestionSetPermissions
+from vdoc_api.custom_permissions import UserPermissions, ConsultantPermissions, QuestionSetPermissions, \
+    AnswerPermissions
 from vdoc_api.models import Consultant, QuestionSet, Question
-from vdoc_api.serializers import UserSerializer, ConsultantSerializer, QuestionSetSerializer, QuestionSerializer
+from vdoc_api.serializers import UserSerializer, ConsultantSerializer, QuestionSetSerializer, QuestionSerializer, \
+    AnswerSerializer
 
 User = get_user_model()
 
@@ -184,5 +186,22 @@ class APIQuestion(APIView):
             pq.save()
         return response
 
+
+class APIAnswer(APIView):
+    permission_classes = [AnswerPermissions]
+
+    def post(self, request):
+        question = request.data.get("question")
+        text = request.data.get("text")
+        if not question:
+            return Response({"message": "Question is required"}, status=status.HTTP_400_BAD_REQUEST)
+        if not text:
+            return Response({"message": "Text is required"}, status=status.HTTP_400_BAD_REQUEST)
+        request.data["user"] = request.user
+        serializer = AnswerSerializer(request.data)
+        serializer.create(request.data)
+        next_q = Question.objects.get(id=question)
+        data = {"next_q": next_q.next_question_id}
+        return Response(data, status=status.HTTP_201_CREATED)
 
 
