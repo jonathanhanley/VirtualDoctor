@@ -44,3 +44,7 @@ class QuestionSetPermissions(BasePermission):
                 ):
             allow = True
         return allow
+
+
+class QuestionPermissions(QuestionSetPermissions):
+    SAFE_METHODS = []

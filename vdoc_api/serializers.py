@@ -3,7 +3,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework import serializers
 from django.db import models
 
-from vdoc_api.models import Consultant, QuestionSet
+from vdoc_api.models import Consultant, QuestionSet, Question
 
 User = get_user_model()
 
@@ -64,3 +64,17 @@ class QuestionSetSerializer(serializers.ModelSerializer):
         consultant = Consultant.objects.get(id=c)
         validated_data["consultant"] = consultant
         return QuestionSet.objects.create(**validated_data)
+
+
+class QuestionSerializer(serializers.ModelSerializer):
+    # set = models.ForeignKey('QuestionSet', on_delete=models.CASCADE)
+    text = models.TextField(max_length=1028, null=True, blank=True)
+    hint = models.TextField(max_length=1028, null=True, blank=True)
+    # next_question = models.ForeignKey('Question', on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        model = Question
+        fields = ('set', 'text', 'hint', 'next_question')
+
+
+

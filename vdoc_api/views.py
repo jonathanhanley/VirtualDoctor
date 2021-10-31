@@ -6,8 +6,8 @@ from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
 
 from vdoc_api.custom_permissions import UserPermissions, ConsultantPermissions, QuestionSetPermissions
-from vdoc_api.models import Consultant, QuestionSet
-from vdoc_api.serializers import UserSerializer, ConsultantSerializer, QuestionSetSerializer
+from vdoc_api.models import Consultant, QuestionSet, Question
+from vdoc_api.serializers import UserSerializer, ConsultantSerializer, QuestionSetSerializer, QuestionSerializer
 
 User = get_user_model()
 
@@ -141,6 +141,19 @@ class APIQuestionSet(APIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+class APIQuestion(APIView):
+    permission_classes = [QuestionSetPermissions]
+
+    def get(self, request):
+        data = request.query_params
+        if data.get("id"):
+            question_set = Question.objects.filter(id=data.get("id"))
+            if len(question_set) > 0:
+                serializer = QuestionSerializer(question_set[0])
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({"message": "No question set was found matching that ID"}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({"message": "ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
