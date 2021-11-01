@@ -6,7 +6,7 @@ from .forms import CustomUserCreationForm, CustomUserChangeForm
 
 
 # Register your models here.
-from .models import Consultant
+from .models import Consultant, QuestionSet, Question, Answer
 
 CustomUser = get_user_model()
 
@@ -18,3 +18,6 @@ class CustomUserAdmin(UserAdmin):
 
 admin.site.register(CustomUser, CustomUserAdmin)
 admin.site.register(Consultant)
+admin.site.register(Question)
+admin.site.register(QuestionSet)
+admin.site.register(Answer)
