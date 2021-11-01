@@ -21,6 +21,17 @@
 | Authentication Documentation     | [Postman](https://documenter.getpostman.com/view/11213399/UV5c9v2K) | 
 | Questions/ Answers Documentation     | [Postman](https://documenter.getpostman.com/view/11213399/UVByKWYC) | 
 
+### User Examples
+1. Login --> Use token returned for all other interations.
+2. Ping question-set endpoint, with no id. This will return a list of question sets the user can answer.
+   (Not yet implemented).
+   
+3. Ping question-set endpoint, with the desired ID from step 2. This will contain the an ID for the first question 
+   to ask the user.
+   
+4. Ping question endpoint with ID from step 3.
+5. Ping answer endpoint with answer from user. This will give the id of the next question. GOTO set 4
+
 
 ### TODO
 1. ~~Create Django Project~~
