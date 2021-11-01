@@ -1,22 +1,25 @@
 # VirtualDoctor
 
-### Setup instructions
+### Setup instructions (Local)
 1.     git clone https://github.com/jonathanhanley/VirtualDoctor.git
 2.     cd VirtualDoctor
 3.     docker build .
 4.     docker-compose up
 
-### Credentials - Local only.
+### Credentials.
 | Account Type        | Username           | Password           |
 | ------------- |:-------------:| :-------------:| 
-| Admin    | admin | admin |
-| User    | testemail@gmail.com | MyTestPassword123 |
+| User    | testuser@gmail.com | TestPassword |
+| Consultant    | testconsultant@gmail.com | TestPassword |
 
 
 ### Urls
 | Page        | Url           |
 | ------------- |:-------------:| 
-| Authentication Documentation (local)     | [Postman](https://documenter.getpostman.com/view/11213399/UV5c9v2K) | 
+| local     | [localhost](http://localhost) | 
+| server     | [188.166.30.96](http://188.166.30.96/) | 
+| Authentication Documentation     | [Postman](https://documenter.getpostman.com/view/11213399/UV5c9v2K) | 
+| Questions/ Answers Documentation     | [Postman](https://documenter.getpostman.com/view/11213399/UVByKWYC) | 
 
 
 ### TODO
