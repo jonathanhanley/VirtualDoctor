@@ -677,3 +677,80 @@ class TestAnswer(TestCase):
         response = client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNone(response.data.get("next_q"))
+
+
+class TestIntegration(TestCase):
+
+    def test_consultant_integration(self):
+        url = reverse('api-consultant')
+        data = {
+            "first_name": "Test",
+            "last_name": "Consultant",
+            "email": "testconsultantemail@gmail.com",
+            "password": "MyTestPassword",
+        }
+        client = APIClient()
+        client.post(url, data, format='json')
+
+        data = {
+            "username": "testconsultantemail@gmail.com",
+            "password": "MyTestPassword"
+        }
+        url = reverse('api-login')
+        token = client.post(url, data, format='json').data.get('token')
+        url = reverse('api-question-set')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token)
+        data = {
+            "name": "This is my test set",
+            "description": "This is my test set description",
+        }
+        response = client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        question_set_id = response.data.get("id")
+        self.assertIsNotNone(question_set_id)
+        url = reverse('api-question')
+
+        data = {
+            "set": question_set_id,
+            "text": "Are ye doing a bit of requesting?",
+            "hint": "Yes/ No",
+        }
+        response = client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        q_id = response.data.get("id")
+        self.assertIsNotNone(q_id)
+
+        data = {
+            "set": question_set_id,
+            "text": "Are ye doing a bit of validating?",
+            "hint": "Yes/ No",
+            "prev_question": q_id,
+        }
+        response = client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+
+
+    def test_user_integration(self):
+        url = reverse('api-user')
+        data = {
+            "email": "testuseremail@gmail.com",
+            "password": "MyTestPassword",
+            "code": "bee82",
+        }
+        client = APIClient()
+        client.post(url, data, format='json')
+
+        data = {
+            "username": "testuseremail@gmail.com",
+            "password": "MyTestPassword"
+        }
+        url = reverse('api-login')
+        token = client.post(url, data, format='json').data.get('token')
+        self.assertIsNotNone(token)
+
+
+
+
