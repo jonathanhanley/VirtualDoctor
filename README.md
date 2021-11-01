@@ -24,12 +24,12 @@
 ### User Examples
 1. Login --> Use token returned for all other interations.
 2. Ping question-set endpoint, with no id. This will return a list of question sets the user can answer.
-   (Not yet implemented).
+   (Not yet implemented). Can be skipped for testing
    
 3. Ping question-set endpoint, with the desired ID from step 2. This will contain the an ID for the first question 
-   to ask the user.
+   to ask the user. Valid question-set id is 1. We can skip this step for testing.
    
-4. Ping question endpoint with ID from step 3.
+4. Ping question endpoint with ID from step 3. id=2 can be used for testing.
 5. Ping answer endpoint with answer from user. This will give the id of the next question. GOTO set 4
 
 
