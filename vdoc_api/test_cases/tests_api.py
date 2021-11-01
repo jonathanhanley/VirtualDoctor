@@ -729,6 +729,11 @@ class TestIntegration(TestCase):
         }
         response = client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        url = reverse('api-question-set')
+        data = {"id": question_set_id}
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.data.get("first_question_id"), q_id)
+
 
 
 

@@ -54,10 +54,18 @@ class ConsultantSerializer(serializers.ModelSerializer):
 class QuestionSetSerializer(serializers.ModelSerializer):
     name = serializers.CharField(max_length=255)
     description = serializers.CharField(max_length=10000)
+    first_question_id = serializers.SerializerMethodField('get_first_q_id')
+
+    def get_first_q_id(self, question_set):
+        if isinstance(question_set, QuestionSet):
+            questions = Question.objects.filter(set_id=question_set.id).order_by('id')
+            if questions:
+                return questions[0].id
+        return None
 
     class Meta:
         model = QuestionSet
-        fields = ('id', 'consultant', 'name', 'description', 'created')
+        fields = ('id', 'consultant', 'name', 'description', 'created', 'first_question_id')
 
     def create(self, validated_data):
         c = validated_data.get("consultant")
@@ -83,7 +91,6 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 class AnswerSerializer(serializers.ModelSerializer):
     text = models.TextField(max_length=1028, null=True, blank=True)
-
     class Meta:
         model = Answer
         fields = ('id', 'text')
