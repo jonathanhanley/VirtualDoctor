@@ -139,8 +139,10 @@ class APIQuestionSet(APIView):
              return Response({"message": "Description is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer = QuestionSetSerializer(request.data)
-        serializer.create(request.data)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        q = serializer.create(request.data)
+        data = dict(serializer.data)
+        data["id"] = q.id
+        return Response(data, status=status.HTTP_201_CREATED)
 
 
 class APIQuestion(APIView):
