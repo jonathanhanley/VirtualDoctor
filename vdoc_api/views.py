@@ -199,9 +199,10 @@ class APIAnswer(APIView):
             return Response({"message": "Question is required"}, status=status.HTTP_400_BAD_REQUEST)
         if not text:
             return Response({"message": "Text is required"}, status=status.HTTP_400_BAD_REQUEST)
-        request.data["user"] = request.user
-        serializer = AnswerSerializer(request.data)
-        serializer.create(request.data)
+        data = dict(request.data)
+        data["user"] = request.user
+        serializer = AnswerSerializer(data)
+        serializer.create(data)
         next_q = Question.objects.get(id=question)
         data = {"next_q": next_q.next_question_id}
         return Response(data, status=status.HTTP_201_CREATED)
