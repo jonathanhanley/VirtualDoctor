@@ -60,10 +60,9 @@ class AnswerPermissions(QuestionPermissions):
 
         if request.user and request.user.is_authenticated and \
                 (
-                    (
-                            User.objects.filter(id=request.user.id, code__isnull=False).exclude(code="")
+
+                            User.objects.filter(id=request.user.id, code__isnull=False)
                             and request.method == "POST"
-                    )
                 ):
             allow = True
         return allow
