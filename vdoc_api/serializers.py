@@ -96,7 +96,9 @@ class AnswerSerializer(serializers.ModelSerializer):
         fields = ('id', 'text')
 
     def create(self, validated_data):
-        q = int(validated_data.get("question")[0])
+        q = validated_data.get("question")
+        if isinstance(q, list):
+            q = int(q[0])
         validated_data["question"] = Question.objects.get(id=q)
         return Answer.objects.create(**validated_data)
 
