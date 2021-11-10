@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from vdoc_api.models import Consultant, QuestionSet, Question, Answer
+from vdoc_api.models import Consultant, QuestionSet, Question, Answer, Satisfy
 
 User = get_user_model()
 
@@ -214,3 +214,104 @@ class TestAnswer(TestCase):
         self.assertNotEqual("No I do not like your test question...", self.answer.text)
 
 
+class TestSatisfy(TestCase):
+
+    def setUp(self):
+
+        self.user = User.objects.create_user(
+            email="testconsultant@gmail.com",
+            username="testconsultant@gmail.com",
+            first_name="test",
+            last_name="consultant",
+        )
+        self.consultant = Consultant.objects.create(
+            user=self.user
+        )
+        self.consultant.save()
+        self.question_set = QuestionSet.objects.create(
+            consultant=self.consultant,
+            name="Test Question Set",
+            description="A set of questions used for testing",
+        )
+        self.question_set.save()
+
+        self.question1 = Question.objects.create(
+            set=self.question_set,
+            text="This is level 0 q2?",
+            hint="yes or no.",
+        )
+        self.question1.save()
+        self.question = Question.objects.create(
+            set=self.question_set,
+            text="This is level 0 q1?",
+            hint="Yes or no",
+            next_question=self.question1
+        )
+        self.question.save()
+        self.sub_q_next = Question.objects.create(
+            set=self.question_set,
+            text="This is the level 1 q2?",
+            hint="Give some general feedback",
+            next_question=self.question1,
+        )
+        self.sub_q_next.save()
+        self.sub_q = Question.objects.create(
+            set=self.question_set,
+            text="This is level 1 q1?",
+            hint="Give some general feedback",
+            next_question=self.sub_q_next,
+        )
+        self.sub_q.save()
+        self.satisfy1 = Satisfy.objects.create(
+            parent_question=self.question,
+            sub_question=self.sub_q,
+            text="no",
+        )
+        self.satisfy1.save()
+        self.sub_sub_q = Question.objects.create(
+            set=self.question_set,
+            text="This is level 2 q1",
+            hint="Give some general feedback",
+            next_question=self.sub_q.next_question,
+        )
+        self.sub_sub_q.save()
+        self.satisfy1 = Satisfy.objects.create(
+            parent_question=self.sub_q,
+            sub_question=self.sub_sub_q,
+            text="no",
+        )
+        self.satisfy1.save()
+
+    def test_satisfy(self):
+        ans = Answer.objects.create(
+            question=self.question,
+            user=self.user,
+            text="sure"
+        )
+        self.assertEqual(ans.get_next_question(), self.question1)
+
+        ans = Answer.objects.create(
+            question=self.question,
+            user=self.user,
+            text="not really"
+        )
+        self.assertEqual(ans.get_next_question(), self.sub_q)
+
+        ans = Answer.objects.create(
+            question=self.sub_q,
+            user=self.user,
+            text="no",
+        )
+        self.assertEqual(ans.get_next_question(), self.sub_sub_q)
+        ans = Answer.objects.create(
+            question=self.sub_q,
+            user=self.user,
+            text="yes",
+        )
+        self.assertEqual(ans.get_next_question(), self.sub_q_next)
+        ans = Answer.objects.create(
+            question=self.sub_sub_q,
+            user=self.user,
+            text="yes",
+        )
+        self.assertEqual(ans.get_next_question(), self.sub_q_next)
