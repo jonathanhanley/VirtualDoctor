@@ -202,9 +202,10 @@ class APIAnswer(APIView):
         data = dict(request.data)
         data["user"] = request.user
         serializer = AnswerSerializer(data)
-        serializer.create(data)
-        next_q = Question.objects.get(id=question)
-        data = {"next_q": next_q.next_question_id}
+        ans = serializer.create(data)
+        ans = ans.get_next_question()
+        if ans: ans = ans.id
+        data = {"next_q": ans}
         return Response(data, status=status.HTTP_201_CREATED)
 
 

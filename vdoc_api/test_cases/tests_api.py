@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase, APIClient
 
-from vdoc_api.models import Consultant, QuestionSet, Question
+from vdoc_api.models import Consultant, QuestionSet, Question, Satisfy
 
 User = get_user_model()
 
@@ -653,6 +653,19 @@ class TestAnswer(TestCase):
         )
         self.question.next_question = self.next_question
         self.question.save()
+        self.sub_question = Question.objects.create(
+            set=self.question_set,
+            text="What are you testing?",
+            hint="",
+            next_question=self.question.next_question,
+        )
+        self.sub_question.save()
+        satisfy = Satisfy.objects.create(
+            parent_question=self.question,
+            sub_question=self.sub_question,
+            text="yes"
+        )
+        satisfy.save()
         token = Token.objects.create(
             user=user
         )
@@ -665,7 +678,23 @@ class TestAnswer(TestCase):
         client.credentials(HTTP_AUTHORIZATION='Token ' + self.user_token.key)
         data = {
             "question": self.question.id,
-            "text": "yes",
+            "text": "yeah",
+        }
+        response = client.post(url, data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data.get("next_q"), self.sub_question.id)
+        data = {
+            "question": self.sub_question.id,
+            "text": "yeah",
+        }
+        response = client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data.get("next_q"), self.next_question.id)
+
+        data = {
+            "question": self.question.id,
+            "text": "nope",
         }
         response = client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)

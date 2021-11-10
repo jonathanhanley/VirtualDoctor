@@ -237,27 +237,47 @@ class TestSatisfy(TestCase):
 
         self.question1 = Question.objects.create(
             set=self.question_set,
-            text="How do you like my test question?",
+            text="This is level 0 q2?",
             hint="yes or no.",
         )
         self.question1.save()
         self.question = Question.objects.create(
             set=self.question_set,
-            text="Do you like my app?",
+            text="This is level 0 q1?",
             hint="Yes or no",
             next_question=self.question1
         )
         self.question.save()
-        self.sub_q = Question.objects.create(
+        self.sub_q_next = Question.objects.create(
             set=self.question_set,
-            text="Why do you not like my app?",
+            text="This is the level 1 q2?",
             hint="Give some general feedback",
             next_question=self.question1,
+        )
+        self.sub_q_next.save()
+        self.sub_q = Question.objects.create(
+            set=self.question_set,
+            text="This is level 1 q1?",
+            hint="Give some general feedback",
+            next_question=self.sub_q_next,
         )
         self.sub_q.save()
         self.satisfy1 = Satisfy.objects.create(
             parent_question=self.question,
             sub_question=self.sub_q,
+            text="no",
+        )
+        self.satisfy1.save()
+        self.sub_sub_q = Question.objects.create(
+            set=self.question_set,
+            text="This is level 2 q1",
+            hint="Give some general feedback",
+            next_question=self.sub_q.next_question,
+        )
+        self.sub_sub_q.save()
+        self.satisfy1 = Satisfy.objects.create(
+            parent_question=self.sub_q,
+            sub_question=self.sub_sub_q,
             text="no",
         )
         self.satisfy1.save()
@@ -276,3 +296,22 @@ class TestSatisfy(TestCase):
             text="not really"
         )
         self.assertEqual(ans.get_next_question(), self.sub_q)
+
+        ans = Answer.objects.create(
+            question=self.sub_q,
+            user=self.user,
+            text="no",
+        )
+        self.assertEqual(ans.get_next_question(), self.sub_sub_q)
+        ans = Answer.objects.create(
+            question=self.sub_q,
+            user=self.user,
+            text="yes",
+        )
+        self.assertEqual(ans.get_next_question(), self.sub_q_next)
+        ans = Answer.objects.create(
+            question=self.sub_sub_q,
+            user=self.user,
+            text="yes",
+        )
+        self.assertEqual(ans.get_next_question(), self.sub_q_next)

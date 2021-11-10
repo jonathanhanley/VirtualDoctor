@@ -1,7 +1,6 @@
 import hashlib
 from difflib import SequenceMatcher
 
-from django.contrib.auth import get_user_model
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -69,5 +68,5 @@ class Answer(models.Model):
         if max_score > 0.3:
             return max_test.sub_question
 
-        return max_test.parent_question.next_question
+        return self.question.next_question
 
