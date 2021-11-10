@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 
-from vdoc_api.models import Consultant, QuestionSet, Question, Answer, Satisfy
+from vdoc_api.models import Consultant, QuestionSet, Question, Answer, Satisfy, Loop
 
 User = get_user_model()
 
@@ -214,6 +214,59 @@ class TestAnswer(TestCase):
         self.assertNotEqual("No I do not like your test question...", self.answer.text)
 
 
+class TestLoop(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            email="testuser@gmail.com",
+            username="testuser@gmail.com",
+            first_name="test",
+            last_name="user",
+            code="abc12"
+        )
+        user = User.objects.create_user(
+            email="testconsultant@gmail.com",
+            username="testconsultant@gmail.com",
+            first_name="test",
+            last_name="consultant",
+        )
+        self.consultant = Consultant.objects.create(
+            user=user
+        )
+        self.consultant.save()
+        self.question_set = QuestionSet.objects.create(
+            consultant=self.consultant,
+            name="Test Question Set",
+            description="A set of questions used for testing",
+        )
+        self.question_set.save()
+        self.question = Question.objects.create(
+            set=self.question_set,
+            text="How do you like my test question?",
+            hint="The answer is very much so...",
+        )
+        self.question.save()
+        self.loop = Loop.objects.create(
+            question=self.question,
+            loop_amount=2,
+        )
+        self.loop.save()
+
+    def test_is_done(self):
+        self.assertFalse(self.loop.is_done(self.user))
+        Answer.objects.create(
+            question=self.question,
+            user=self.user,
+            text="ABC",
+        ).save()
+        self.assertFalse(self.loop.is_done(self.user))
+        Answer.objects.create(
+            question=self.question,
+            user=self.user,
+            text="ABC",
+        ).save()
+        self.assertTrue(self.loop.is_done(self.user))
+
 class TestSatisfy(TestCase):
 
     def setUp(self):
@@ -315,3 +368,6 @@ class TestSatisfy(TestCase):
             text="yes",
         )
         self.assertEqual(ans.get_next_question(), self.sub_q_next)
+
+
+

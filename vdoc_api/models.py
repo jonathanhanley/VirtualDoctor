@@ -48,6 +48,15 @@ class Satisfy(models.Model):
     text = models.CharField(max_length=255, null=True, blank=True)
 
 
+class Loop(models.Model):
+    question = models.ForeignKey('Question', on_delete=models.CASCADE)
+    loop_amount = models.IntegerField()
+
+    def is_done(self, user):
+        answers = Answer.objects.filter(user=user, question=self.question)
+        return len(answers) >= self.loop_amount
+
+
 class Answer(models.Model):
     question = models.ForeignKey('Question', on_delete=models.CASCADE)
     user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
