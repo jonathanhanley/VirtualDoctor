@@ -65,6 +65,12 @@ class Answer(models.Model):
         return SequenceMatcher(None, a, b).ratio()
 
     def get_next_question(self):
+        loops = Loop.objects.filter(
+            question=self.question)
+        if len(loops):
+            loop = loops[0]
+            if not loop.is_done(self.user):
+                return self.question
         sub_question_tests = Satisfy.objects.filter(parent_question=self.question)
         max_test = None
         max_score = -1

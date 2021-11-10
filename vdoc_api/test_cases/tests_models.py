@@ -203,6 +203,8 @@ class TestAnswer(TestCase):
         )
         self.answer.save()
 
+
+
     def test_answer_question(self):
         self.assertEqual(self.answer.question, self.question)
 
@@ -212,6 +214,55 @@ class TestAnswer(TestCase):
     def test_answer_text(self):
         self.assertEqual("Yes I like your test question...", self.answer.text)
         self.assertNotEqual("No I do not like your test question...", self.answer.text)
+
+
+    def test_answer_loop(self):
+        question = Question.objects.create(
+            set=self.question_set,
+            text="1",
+            hint="",
+        )
+        question.save()
+        Loop.objects.create(
+            question=question,
+            loop_amount=5,
+        ).save()
+        ans = Answer.objects.create(
+            question=question,
+            user=self.user,
+            text=""
+        )
+        ans.save()
+        self.assertEqual(ans.get_next_question(), question)
+        ans = Answer.objects.create(
+            question=question,
+            user=self.user,
+            text=""
+        )
+        ans.save()
+        self.assertEqual(ans.get_next_question(), question)
+        ans = Answer.objects.create(
+            question=question,
+            user=self.user,
+            text=""
+        )
+        ans.save()
+        self.assertEqual(ans.get_next_question(), question)
+        ans = Answer.objects.create(
+            question=question,
+            user=self.user,
+            text=""
+        )
+        ans.save()
+        self.assertEqual(ans.get_next_question(), question)
+        ans = Answer.objects.create(
+            question=question,
+            user=self.user,
+            text=""
+        )
+        ans.save()
+        self.assertEqual(ans.get_next_question(), None)
+
 
 
 class TestLoop(TestCase):
