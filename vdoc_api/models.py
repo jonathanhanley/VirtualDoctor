@@ -116,7 +116,6 @@ class Answer(models.Model):
             if not loop.is_done(self.user):
                 return self.question
         sub_question_tests = Satisfy.objects.filter(parent_question=self.question)
-        print(sub_question_tests)
         max_test = None
         max_score = -1
         for test in sub_question_tests:
