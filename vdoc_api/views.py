@@ -28,7 +28,24 @@ class APIUser(APIView):
     permission_classes = [UserPermissions]
 
     def get(self, request):
-        serializer = UserSerializer(request.user)
+        data = request.query_params
+        is_consultant = Consultant.objects.filter(user=request.user)
+        if is_consultant:
+            consultant = is_consultant.last()
+        else:
+            consultant = False
+        if not data.get("id") and consultant:
+            users = User.objects.filter(code=consultant.code)
+            serializer = UserSerializer(users, many=True)
+        elif data.get("id") and consultant:
+            user = User.objects.filter(code=consultant.code, id=data.get("id"))
+            if user:
+                user = user.last()
+                serializer = UserSerializer(user)
+            else:
+                return Response({}, status.HTTP_404_NOT_FOUND)
+        else:
+            serializer = UserSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):

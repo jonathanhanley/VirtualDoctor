@@ -115,54 +115,118 @@ class TestLogout(TestCase):
 
 class TestUser(TestCase):
 
-    def test_valid_get(self):
-        url = reverse('api-user')
-        client = APIClient()
-        data = {}
+    def setUp(self) -> None:
+        consultant_user = User.objects.create_user(
+            username="testconsultant",
+            email="testconsultant@gmail.com",
+            password="MyTestPassword",
+        )
+        consultant = Consultant.objects.create(
+            user=consultant_user
+        )
+        consultant.save()
+        self.consultant = consultant
         user = User.objects.create_user(
             username='testuseremail@gmail.com',
             email='testuseremail@gmail.com',
             password='testpassword1234',
-            code='abc12',
+            code=consultant.code,
         )
+        self.user = user
+
+    def test_valid_get_patient_user(self):
+        url = reverse('api-user')
+        client = APIClient()
+        data = {}
         token = Token.objects.create(
-            user=user
+            user=self.user
         )
         client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
         response = client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('email'), 'testuseremail@gmail.com')
         self.assertEqual(response.data.get('username'), 'testuseremail@gmail.com')
-        self.assertEqual(response.data.get('code'), 'abc12')
+        self.assertEqual(response.data.get('code'), self.consultant.code)
         self.assertIsNone(response.data.get('password'))
+
+    def test_valid_get_consultant_user(self):
+        url = reverse('api-user')
+        client = APIClient()
+        token = Token.objects.create(
+            user=self.consultant.user
+        )
+        data = {"id": self.user.id}
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data.get('email'), self.user.email)
+        self.assertEqual(response.data.get('username'), self.user.email)
+        self.assertEqual(response.data.get('code'), self.consultant.code)
+        self.assertIsNone(response.data.get('password'))
+
+        other_user = User.objects.create_user(
+            username="RANDOMER",
+            password="NthingToDoWithConsultant",
+            code="12345",
+        )
+        data = {"id": other_user.id}
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIsNone(response.data.get("email"))
+        self.assertIsNone(response.data.get("username"))
+        self.assertIsNone(response.data.get("code"))
+        self.assertIsNone(response.data.get("password"))
+
+        users = [self.user]
+        for i in range(100):
+            user = User.objects.create_user(
+                username=f"test{i}@gmail.com",
+                email=f"test{i}@gmail.com",
+                code=self.consultant.code,
+            )
+            users.append(user)
+
+        data = {}
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = client.get(url, data, format='json')
+        self.assertEqual(len(response.data), 101)
+        for i in range(100):
+            given = response.data[i]
+            actual = users[i]
+            self.assertEqual(given.get("id"), actual.id)
+            self.assertEqual(given.get("username"), actual.username)
+            self.assertEqual(given.get("email"), actual.email)
+            self.assertEqual(given.get("code"), self.consultant.code)
+            self.assertIsNone(given.get("password"))
 
     def test_valid_register(self):
         url = reverse('api-user')
         data = {
-            "email": "testuseremail@gmail.com",
+            "email": "testemail@gmail.com",
             "password": "MyTestPassword",
-            "code": "abc12",
+            "code": self.consultant.code,
         }
         client = APIClient()
         response = client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get('email'), 'testuseremail@gmail.com')
-        self.assertEqual(response.data.get('username'), 'testuseremail@gmail.com')
-        self.assertEqual(response.data.get('code'), 'abc12')
+        self.assertEqual(response.data.get('email'), 'testemail@gmail.com')
+        self.assertEqual(response.data.get('username'), 'testemail@gmail.com')
+        self.assertEqual(response.data.get('code'), self.consultant.code)
         self.assertIsNone(response.data.get('password'))
 
     def test_email_in_use(self):
         url = reverse('api-user')
         data = {
-            "email": "testuseremail@gmail.com",
+            "email": "testemail@gmail.com",
             "password": "MyTestPassword",
-            "code": "abc12",
+            "code": self.consultant.code,
         }
         client = APIClient()
         response = client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data.get('email'), 'testuseremail@gmail.com')
-        self.assertEqual(response.data.get('username'), 'testuseremail@gmail.com')
+        self.assertEqual(response.data.get('email'), 'testemail@gmail.com')
+        self.assertEqual(response.data.get('username'), 'testemail@gmail.com')
         self.assertIsNone(response.data.get('password'))
 
         response = client.post(url, data, format='json')
@@ -173,7 +237,7 @@ class TestUser(TestCase):
         url = reverse('api-user')
         data = {
             "password": "MyTestPassword",
-            "code": "abc12",
+            "code": self.consultant.code,
         }
         client = APIClient()
         response = client.post(url, data, format='json')
@@ -184,7 +248,7 @@ class TestUser(TestCase):
         url = reverse('api-user')
         data = {
             "email": "testuseremail@gmail.com",
-            "code": "abc12",
+            "code": self.consultant.code,
         }
         client = APIClient()
         response = client.post(url, data, format='json')
@@ -209,7 +273,7 @@ class TestUser(TestCase):
             username='testuser',
             email='testuseremail@gmail.com',
             password='testpassword1234',
-            code="abc12"
+            code=self.consultant.code
         )
         token = Token.objects.create(
             user=user
@@ -474,10 +538,10 @@ class TestQuestionSet(TestCase):
         }
         response = client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        
-        
+
+
 class TestQuestion(TestCase):
-    
+
     def setUp(self) -> None:
         user = User.objects.create_user(
             username='testuser',
@@ -763,10 +827,6 @@ class TestIntegration(TestCase):
         response = client.get(url, data, format='json')
         self.assertEqual(response.data.get("first_question_id"), q_id)
 
-
-
-
-
     def test_user_integration(self):
         url = reverse('api-user')
         data = {
@@ -784,7 +844,3 @@ class TestIntegration(TestCase):
         url = reverse('api-login')
         token = client.post(url, data, format='json').data.get('token')
         self.assertIsNotNone(token)
-
-
-
-
