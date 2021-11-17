@@ -33,7 +33,8 @@ ALLOWED_HOSTS = [
     'hanley.codes',
     'http://hanley.codes',
     '188.166.30.96',
-    'localhost'
+    'localhost',
+    '192.168.1.30'
 ]
 
 

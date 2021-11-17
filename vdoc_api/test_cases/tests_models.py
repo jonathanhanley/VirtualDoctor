@@ -203,8 +203,6 @@ class TestAnswer(TestCase):
         )
         self.answer.save()
 
-
-
     def test_answer_question(self):
         self.assertEqual(self.answer.question, self.question)
 
@@ -214,56 +212,6 @@ class TestAnswer(TestCase):
     def test_answer_text(self):
         self.assertEqual("Yes I like your test question...", self.answer.text)
         self.assertNotEqual("No I do not like your test question...", self.answer.text)
-
-
-    def test_answer_loop(self):
-        question = Question.objects.create(
-            set=self.question_set,
-            text="1",
-            hint="",
-        )
-        question.save()
-        Loop.objects.create(
-            question=question,
-            loop_amount=5,
-        ).save()
-        ans = Answer.objects.create(
-            question=question,
-            user=self.user,
-            text=""
-        )
-        ans.save()
-        self.assertEqual(ans.get_next_question(), question)
-        ans = Answer.objects.create(
-            question=question,
-            user=self.user,
-            text=""
-        )
-        ans.save()
-        self.assertEqual(ans.get_next_question(), question)
-        ans = Answer.objects.create(
-            question=question,
-            user=self.user,
-            text=""
-        )
-        ans.save()
-        self.assertEqual(ans.get_next_question(), question)
-        ans = Answer.objects.create(
-            question=question,
-            user=self.user,
-            text=""
-        )
-        ans.save()
-        self.assertEqual(ans.get_next_question(), question)
-        ans = Answer.objects.create(
-            question=question,
-            user=self.user,
-            text=""
-        )
-        ans.save()
-        self.assertEqual(ans.get_next_question(), None)
-
-
 
 class TestLoop(TestCase):
 
@@ -299,9 +247,26 @@ class TestLoop(TestCase):
         self.question.save()
         self.loop = Loop.objects.create(
             question=self.question,
+            user=self.user,
             loop_amount=2,
         )
         self.loop.save()
+
+        self.looping_parent_q = Question.objects.create(
+            set=self.question_set,
+            text="How do you like my test question?",
+            hint="The answer is very much so...",
+            sub_should_loop=True,
+        )
+        self.looping_parent_q.save()
+        self.looping_child_q = Question.objects.create(
+            set=self.question_set,
+            text="LOOPING",
+            hint="",
+            parent_q=self.looping_parent_q,
+        )
+        self.looping_child_q.save()
+
 
     def test_is_done(self):
         self.assertFalse(self.loop.is_done(self.user))
@@ -317,6 +282,34 @@ class TestLoop(TestCase):
             text="ABC",
         ).save()
         self.assertTrue(self.loop.is_done(self.user))
+
+    def test_looping(self):
+        ans = Answer.objects.create(
+            user=self.user,
+            question=self.looping_parent_q,
+            text="5"
+        )
+        ans.save()
+
+        for _ in range(4):
+            ans = Answer.objects.create(
+                user=self.user,
+                question=self.looping_child_q,
+                text="ajdf;asd"
+            )
+            ans.save()
+            self.assertEqual(ans.get_next_question(), self.looping_child_q)
+        ans = Answer.objects.create(
+            user=self.user,
+            question=self.looping_child_q,
+            text="ajdf;asd"
+        )
+        ans.save()
+        self.assertIsNone(ans.get_next_question())
+
+
+
+
 
 class TestSatisfy(TestCase):
 
@@ -386,6 +379,27 @@ class TestSatisfy(TestCase):
         )
         self.satisfy1.save()
 
+        self.question_num_parent = Question.objects.create(
+            set=self.question_set,
+            text="This is level 0 q2?",
+            hint="yes or no.",
+            sub_should_loop=True,
+        )
+        self.question_num_parent.save()
+        self.question_num_sub = Question.objects.create(
+            set=self.question_set,
+            text="Looping here",
+            hint="yes or no.",
+            parent_q=self.question_num_parent,
+        )
+        self.question_num_sub.save()
+        self.num_satisfy = Satisfy.objects.create(
+            parent_question=self.question_num_parent,
+            sub_question=self.question_num_sub,
+            text="10",
+        )
+        self.num_satisfy.save()
+
     def test_satisfy(self):
         ans = Answer.objects.create(
             question=self.question,
@@ -420,5 +434,21 @@ class TestSatisfy(TestCase):
         )
         self.assertEqual(ans.get_next_question(), self.sub_q_next)
 
+    def test_satisfy_num(self):
+        ans = Answer.objects.create(
+            question=self.question_num_parent,
+            user=self.user,
+            text="50"
+        )
+        ans.save()
+        self.assertEqual(ans.get_next_question(), self.question_num_sub)
+
+        ans = Answer.objects.create(
+            question=self.question_num_parent,
+            user=self.user,
+            text="No number present"
+        )
+        ans.save()
+        self.assertEqual(ans.get_next_question(), None)
 
 
