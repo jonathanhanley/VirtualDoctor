@@ -50,6 +50,7 @@ class Satisfy(models.Model):
 
 class Loop(models.Model):
     question = models.ForeignKey('Question', on_delete=models.CASCADE)
+    user = models.ForeignKey('CustomUser', on_delete=models.CASCADE)
     loop_amount = models.IntegerField()
 
     def is_done(self, user):
@@ -66,9 +67,11 @@ class Answer(models.Model):
 
     def get_next_question(self):
         loops = Loop.objects.filter(
-            question=self.question)
+            question=self.question,
+            user=self.user,
+        )
         if len(loops):
-            loop = loops[0]
+            loop = loops[-1]
             if not loop.is_done(self.user):
                 return self.question
         sub_question_tests = Satisfy.objects.filter(parent_question=self.question)
