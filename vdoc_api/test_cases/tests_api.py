@@ -7,7 +7,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase, APIClient
 
-from vdoc_api.models import Consultant, QuestionSet, Question, Satisfy
+from vdoc_api.models import Consultant, QuestionSet, Question, Satisfy, Answer
 
 User = get_user_model()
 
@@ -464,7 +464,7 @@ class TestQuestionSet(TestCase):
         token.save()
         self.consultant_token = token
 
-    def test_valid_get(self):
+    def test_valid_get_user(self):
         url = reverse('api-question-set')
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION='Token ' + self.user_token.key)
@@ -483,7 +483,7 @@ class TestQuestionSet(TestCase):
         self.assertEqual(response.data.get("description"), "This is a test question set")
         self.assertEqual(response.data.get("created"), f"{datetime.datetime.today().date()}")
 
-    def test_get_no_id(self):
+    def test_get_no_id_user(self):
         url = reverse('api-question-set')
         client = APIClient()
         client.credentials(HTTP_AUTHORIZATION='Token ' + self.user_token.key)
@@ -538,6 +538,56 @@ class TestQuestionSet(TestCase):
         }
         response = client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_all_from_user(self):
+        url = reverse('api-question-set')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.consultant_token.key)
+        set_ids = []
+        for i in range(10):
+            data = {
+                "name": f"This is my test set {i}",
+                "description": "This is my test set description",
+            }
+            response = client.post(url, data, format='json')
+            set_ids.append(response.data.get("id"))
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+            for x in range(10):
+                q = Question.objects.create(
+                    set_id=set_ids[i],
+                    text=f"Test set {x}",
+                    hint=f"Test set {x}",
+                )
+                q.save()
+        users = []
+        for i in range(10):
+            users.append(
+                User.objects.create_user(
+                    username=f"user{i}@gmail.com",
+                    email=f"user{i}@gmail.com",
+                    password=f"TestPassword123",
+                    code=self.consultant.code,
+                )
+            )
+
+        for i in range(10):
+            user = users[i]
+            for x in set_ids[0:i]:
+                questions = Question.objects.filter(set_id=x)
+                for question in questions:
+                    Answer.objects.create(
+                        user=user,
+                        question=question,
+                        text="Sample answer here"
+                    ).save()
+
+        for i, user in enumerate(users):
+            url = reverse('api-question-set')
+            client = APIClient()
+            client.credentials(HTTP_AUTHORIZATION='Token ' + self.consultant_token.key)
+            data = {"user_id": user.id}
+            response = client.get(url, data, format='json')
+            self.assertEqual(len(response.data), i)
 
 
 class TestQuestion(TestCase):
