@@ -242,4 +242,22 @@ class APIAnswer(APIView):
         data = {"next_q": ans_id, "next_q_text": str(ans)}
         return Response(data, status=status.HTTP_201_CREATED)
 
+    def get(self, request):
+        data = request.query_params
+        if Consultant.objects.filter(user=request.user):
+            consultant = Consultant.objects.get(user=request.user)
+            user_id = data.get("user_id")
+            set_id = data.get("set_id")
+            question_set = QuestionSet.objects.filter(id=set_id, consultant=consultant)
+            user = User.objects.filter(id=user_id, code=consultant.code)
+            if question_set and user:
+                question_set = question_set.last()
+                user = user.last()
+                answers = Answer.objects.filter(question__set=question_set, user=user).order_by("id")
+                serializer = AnswerSerializer(answers, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+        return Response({}, status.HTTP_404_NOT_FOUND)
+
 

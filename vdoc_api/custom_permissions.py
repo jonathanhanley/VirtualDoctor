@@ -59,10 +59,13 @@ class AnswerPermissions(QuestionPermissions):
             allow = True
 
         if request.user and request.user.is_authenticated and \
-                (
+                ((
 
-                            User.objects.filter(id=request.user.id, code__isnull=False)
-                            and request.method == "POST"
-                ):
+                        User.objects.filter(id=request.user.id, code__isnull=False)
+                        and request.method == "POST"
+                ) or (
+                Consultant.objects.filter(user=request.user)
+                and request.method == "GET")
+        ):
             allow = True
         return allow

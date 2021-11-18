@@ -748,6 +748,9 @@ class TestAnswer(TestCase):
         self.consultant = Consultant.objects.create(
             user=user,
         )
+        user.code = self.consultant.code
+        user.save()
+        self.user = user
         self.consultant.save()
         self.question_set = QuestionSet.objects.create(
             consultant=self.consultant,
@@ -820,6 +823,30 @@ class TestAnswer(TestCase):
         response = client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIsNone(response.data.get("next_q"))
+
+
+    def test_get(self):
+        url = reverse('api-answer')
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.consultant_token.key)
+        data = {
+            "question": self.question.id,
+            "text": "yeah",
+        }
+        response = client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.consultant_token.key)
+        data = {
+            "set_id": self.question.set.id,
+            "user_id": self.user.id,
+        }
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0].get("text"), "y")
+        self.assertEqual(response.data[0].get("question_text"), "How are ye doing a bit of testing?")
+
 
 
 class TestIntegration(TestCase):
