@@ -91,9 +91,17 @@ class QuestionSerializer(serializers.ModelSerializer):
 
 class AnswerSerializer(serializers.ModelSerializer):
     text = models.TextField(max_length=1028, null=True, blank=True)
+    question_text = serializers.SerializerMethodField('get_question_text')
+
+    def get_question_text(self, answer):
+        if isinstance(answer, Answer):
+            question_text = answer.question.text
+            return question_text
+        return None
+
     class Meta:
         model = Answer
-        fields = ('id', 'text')
+        fields = ('id', 'text', 'question_text')
 
     def create(self, validated_data):
         q = validated_data.get("question")

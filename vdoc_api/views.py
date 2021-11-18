@@ -7,7 +7,7 @@ from rest_framework.authtoken.models import Token
 
 from vdoc_api.custom_permissions import UserPermissions, ConsultantPermissions, QuestionSetPermissions, \
     AnswerPermissions
-from vdoc_api.models import Consultant, QuestionSet, Question
+from vdoc_api.models import Consultant, QuestionSet, Question, Answer
 from vdoc_api.serializers import UserSerializer, ConsultantSerializer, QuestionSetSerializer, QuestionSerializer, \
     AnswerSerializer
 
@@ -141,8 +141,20 @@ class APIQuestionSet(APIView):
                 serializer = QuestionSetSerializer(question_set[0])
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response({"message": "No question set was found matching that ID"}, status=status.HTTP_404_NOT_FOUND)
-
+        elif Consultant.objects.filter(user=request.user) and data.get("user_id"):
+            consultant = Consultant.objects.get(user=request.user)
+            u_id = data.get("user_id")
+            user = User.objects.filter(id=u_id, code=consultant.code)
+            if user:
+                user = user.last()
+                questions_answered = Answer.objects.filter(user=user)
+                questions_sets = set()
+                for answer in questions_answered:
+                    questions_sets.add(answer.question.set)
+                serializer = QuestionSetSerializer(questions_sets, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
         return Response({"message": "ID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
 
     def post(self, request):
         data = request.data
@@ -229,5 +241,23 @@ class APIAnswer(APIView):
             ans_id = None
         data = {"next_q": ans_id, "next_q_text": str(ans)}
         return Response(data, status=status.HTTP_201_CREATED)
+
+    def get(self, request):
+        data = request.query_params
+        if Consultant.objects.filter(user=request.user):
+            consultant = Consultant.objects.get(user=request.user)
+            user_id = data.get("user_id")
+            set_id = data.get("set_id")
+            question_set = QuestionSet.objects.filter(id=set_id, consultant=consultant)
+            user = User.objects.filter(id=user_id, code=consultant.code)
+            if question_set and user:
+                question_set = question_set.last()
+                user = user.last()
+                answers = Answer.objects.filter(question__set=question_set, user=user).order_by("id")
+                serializer = AnswerSerializer(answers, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+        return Response({}, status.HTTP_404_NOT_FOUND)
 
 
