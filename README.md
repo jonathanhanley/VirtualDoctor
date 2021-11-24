@@ -46,8 +46,8 @@
 4. ~~Dockerized project~~
     
 5. Questions DB:
-    1. Create question
-    2. Create sub question
-    3. Get Question
-    4. Get Sub question
-    5. Save Question
+    1. ~~Create question
+    2. ~~Create sub question
+    3. ~~Get Question
+    4. ~~Get Sub question
+    5. ~~Save Question
