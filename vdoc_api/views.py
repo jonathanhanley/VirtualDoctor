@@ -135,6 +135,9 @@ class APIQuestionSet(APIView):
 
     def get(self, request):
         data = request.query_params
+        if len(data) == 0:
+            data = request.data
+
         if data.get("id"):
             question_set = QuestionSet.objects.filter(id=data.get("id"))
             if len(question_set) > 0:
@@ -144,6 +147,8 @@ class APIQuestionSet(APIView):
         elif Consultant.objects.filter(user=request.user) and data.get("user_id"):
             consultant = Consultant.objects.get(user=request.user)
             u_id = data.get("user_id")
+            if isinstance(u_id, list):
+                u_id = u_id[0]
             user = User.objects.filter(id=u_id, code=consultant.code)
             if user:
                 user = user.last()
@@ -244,10 +249,16 @@ class APIAnswer(APIView):
 
     def get(self, request):
         data = request.query_params
+        if len(data) == 0:
+            data = request.data
         if Consultant.objects.filter(user=request.user):
             consultant = Consultant.objects.get(user=request.user)
             user_id = data.get("user_id")
+            if isinstance(user_id, list):
+                user_id = user_id[0]
             set_id = data.get("set_id")
+            if isinstance(set_id, list):
+                set_id = set_id[0]
             question_set = QuestionSet.objects.filter(id=set_id, consultant=consultant)
             user = User.objects.filter(id=user_id, code=consultant.code)
             if question_set and user:
