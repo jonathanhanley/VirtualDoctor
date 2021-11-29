@@ -114,7 +114,19 @@ class Answer(models.Model):
         if len(loops):
             loop = loops.last()
             if not loop.is_done(self.user):
+                sub_questions = Satisfy.objects.filter(parent_question=self.question)
+                if sub_questions:
+                    sub_question = sub_questions[0]
+                    if sub_question.sub_question:
+                        return sub_question.sub_question
+                    return sub_question.parent_question
                 return self.question
+
+            sub_qs = Question.objects.filter(parent_q=self.question)
+            if sub_qs:
+                sub_q = sub_qs[0]
+                if len(Answer.objects.filter(user=self.user, question=sub_q)) < loop.loop_amount:
+                    return sub_q
         sub_question_tests = Satisfy.objects.filter(parent_question=self.question)
         max_test = None
         max_score = -1
@@ -127,6 +139,16 @@ class Answer(models.Model):
         if max_score > 0.3:
             return max_test.sub_question
 
+        if self.question.parent_q and self.question.parent_q.sub_should_loop and self.question.next_question is None:
+            loop = Loop.objects.filter(
+                question=self.question.parent_q,
+                user=self.user,
+            ).last()
+
+            if loop and (loop.is_done(self.user) or len(Answer.objects.filter(question=self.question.parent_q, user=self.user)) == loop.loop_amount):
+                return self.question.parent_q.next_question
+
+            return self.question.parent_q
         return self.question.next_question
 
     def __str__(self):

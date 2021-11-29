@@ -588,6 +588,7 @@ class TestQuestionSet(TestCase):
             data = {"user_id": user.id}
             response = client.get(url, data, format='json')
             self.assertEqual(len(response.data), i)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TestQuestion(TestCase):

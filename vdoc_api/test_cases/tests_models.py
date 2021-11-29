@@ -290,7 +290,6 @@ class TestLoop(TestCase):
             text="5"
         )
         ans.save()
-
         for _ in range(4):
             ans = Answer.objects.create(
                 user=self.user,
@@ -305,7 +304,78 @@ class TestLoop(TestCase):
             text="ajdf;asd"
         )
         ans.save()
-        self.assertIsNone(ans.get_next_question())
+        ans.get_next_question()
+
+    def test_looping_sub(self):
+        q_set = QuestionSet.objects.create(
+            consultant=self.consultant,
+            name="Test Question Set",
+            description="A set of questions used for testing",
+        )
+        q_set.save()
+        question = Question.objects.create(
+            set=q_set,
+            text="How do you like my test question?",
+            hint="The answer is very much so...",
+            sub_should_loop=True,
+        )
+        question.save()
+        loop = Loop.objects.create(
+            question=question,
+            user=self.user,
+            loop_amount=2,
+        )
+        loop.save()
+        sub_q = Question.objects.create(
+            set=q_set,
+            text="Sub question for loop",
+            hint="Text here",
+            parent_q=question,
+        )
+        sub_q.save()
+        Satisfy.objects.create(
+            parent_question=question,
+            sub_question=sub_q,
+            text="",
+        ).save()
+
+        q = question
+        ans = Answer.objects.create(
+            question=q,
+            text="ANS here",
+            user=self.user,
+        )
+        ans.save()
+        self.assertEqual(q.text, "How do you like my test question?")
+
+        q = ans.get_next_question()
+        ans = Answer.objects.create(
+            question=q,
+            text="ANS here",
+            user=self.user,
+        )
+        ans.save()
+        self.assertEqual(q.text, "Sub question for loop")
+
+        q = ans.get_next_question()
+        ans = Answer.objects.create(
+            question=q,
+            text="ANS here",
+            user=self.user,
+        )
+        ans.save()
+        self.assertEqual(q.text, "How do you like my test question?")
+        q = ans.get_next_question()
+        ans = Answer.objects.create(
+            question=q,
+            text="ANS here",
+            user=self.user,
+        )
+        ans.save()
+        self.assertEqual(q.text, "Sub question for loop")
+        q = ans.get_next_question()
+        self.assertIsNone(q)
+
 
 
 
