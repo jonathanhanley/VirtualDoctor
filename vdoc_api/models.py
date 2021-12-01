@@ -9,6 +9,7 @@ from django.contrib.auth.models import AbstractUser
 # Create your models here.
 class CustomUser(AbstractUser):
     code = models.CharField(max_length=5, null=True, default="")
+    is_consultant = models.BooleanField(default=False, null=True)
 
 
 # Create your models here.
@@ -17,7 +18,10 @@ class Consultant(models.Model):
     code = models.CharField(max_length=5, null=True, default="")
 
     def save(self, *args, **kwargs):
+        self.user.is_consultant = True
         self.code = self.generate_code()
+        self.user.code = self.code
+        self.user.save()
         super(Consultant, self).save(*args, **kwargs)
 
     def generate_code(self):

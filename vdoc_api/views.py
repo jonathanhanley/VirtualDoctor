@@ -34,10 +34,10 @@ class APIUser(APIView):
             consultant = is_consultant.last()
         else:
             consultant = False
-        if not data.get("id") and consultant:
-            users = User.objects.filter(code=consultant.code)
+        if not data.get("id") and not data.get("own_info") and consultant:
+            users = User.objects.filter(code=consultant.code).exclude(id=request.user.id)
             serializer = UserSerializer(users, many=True)
-        elif data.get("id") and consultant:
+        elif data.get("id") and not data.get("own_info") and consultant:
             user = User.objects.filter(code=consultant.code, id=data.get("id"))
             if user:
                 user = user.last()
