@@ -38,6 +38,7 @@ class TestConsultant(TestCase):
         self.assertFalse(user.is_staff)
         self.assertFalse(user.is_superuser)
         self.assertTrue(user.is_active)
+        self.assertTrue(user.is_consultant)
 
     def test_consultant_code(self):
         self.assertEqual(self.consultant.code, '2ec16')
@@ -62,6 +63,7 @@ class TestCustomUser(TestCase):
         self.assertEqual(user.username, "testuser@gmail.com")
         self.assertEqual(user.first_name, "test")
         self.assertEqual(user.last_name, "user")
+        self.assertFalse(user.is_consultant)
 
 
 class TestQuestionSet(TestCase):

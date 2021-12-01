@@ -148,6 +148,7 @@ class TestUser(TestCase):
         self.assertEqual(response.data.get('username'), 'testuseremail@gmail.com')
         self.assertEqual(response.data.get('code'), self.consultant.code)
         self.assertIsNone(response.data.get('password'))
+        self.assertFalse(response.data.get('is_consultant'))
 
     def test_valid_get_consultant_user(self):
         url = reverse('api-user')
@@ -199,6 +200,23 @@ class TestUser(TestCase):
             self.assertEqual(given.get("email"), actual.email)
             self.assertEqual(given.get("code"), self.consultant.code)
             self.assertIsNone(given.get("password"))
+
+    def test_valid_get_consultant(self):
+        url = reverse('api-user')
+        client = APIClient()
+        token = Token.objects.create(
+            user=self.consultant.user
+        )
+        token.save()
+        data = {"own_info": True}
+        client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.data
+        self.assertEqual(data.get("email"), 'testconsultant@gmail.com')
+        self.assertEqual(data.get("username"), 'testconsultant')
+        self.assertEqual(data.get("code"), 'e1b50')
+
 
     def test_valid_register(self):
         url = reverse('api-user')
