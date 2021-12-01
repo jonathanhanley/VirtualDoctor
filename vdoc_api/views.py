@@ -158,6 +158,14 @@ class APIQuestionSet(APIView):
                     questions_sets.add(answer.question.set)
                 serializer = QuestionSetSerializer(questions_sets, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            consultant = Consultant.objects.filter(code=request.user.code)
+            if consultant:
+                consultant = consultant.last()
+                sets = QuestionSet.objects.filter(consultant=consultant).order_by('id')
+                serializer = QuestionSetSerializer(sets, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+
         return Response({"message": "ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
 

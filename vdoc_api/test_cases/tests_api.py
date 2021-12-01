@@ -467,20 +467,22 @@ class TestQuestionSet(TestCase):
         )
         token.save()
         self.user_token = token
-        user = User.objects.create_user(
+        c_user = User.objects.create_user(
             username='testconsultant',
             email='testconsultant@gmail.com',
             password='testpassword1234'
         )
         self.consultant = Consultant.objects.create(
-            user=user,
+            user=c_user,
         )
         self.consultant.save()
         token = Token.objects.create(
-            user=user
+            user=c_user
         )
         token.save()
         self.consultant_token = token
+        user.code = c_user.code
+        user.save()
 
     def test_valid_get_user(self):
         url = reverse('api-question-set')
@@ -511,10 +513,22 @@ class TestQuestionSet(TestCase):
             description="This is a test question set",
         )
         question_set.save()
+        question_set1 = QuestionSet.objects.create(
+            consultant=self.consultant,
+            name="Test Question Set1",
+            description="This is a test question set1",
+        )
+        question_set1.save()
         data = {}
         response = client.get(url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(response.data.get("message"), "ID is required")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data[0].get("name"), "Test Question Set")
+        self.assertEqual(response.data[0].get("description"), "This is a test question set")
+        self.assertEqual(response.data[1].get("name"), "Test Question Set1")
+        self.assertEqual(response.data[1].get("description"), "This is a test question set1")
+        self.assertEqual(len(response.data), 2)
+
 
     def test_get_invalid_id(self):
         url = reverse('api-question-set')
