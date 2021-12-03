@@ -18,8 +18,7 @@
 | ------------- |:-------------:| 
 | local     | [localhost](http://localhost) | 
 | server     | [188.166.30.96](http://188.166.30.96/) | 
-| Authentication Documentation     | [Postman](https://documenter.getpostman.com/view/11213399/UV5c9v2K) | 
-| Questions/ Answers Documentation     | [Postman](https://documenter.getpostman.com/view/11213399/UVByKWYC) | 
+| Documentation     | [Postman](https://documenter.getpostman.com/view/11213399/UVJhCZwZ) | 
 
 ### User Examples
 1. Login --> Use token returned for all other interations.
