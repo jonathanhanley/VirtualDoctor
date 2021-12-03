@@ -723,7 +723,7 @@ class TestQuestion(TestCase):
         data = {"id": -1}
         response = client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertEqual(response.data.get("message"), "No question set was found matching that ID")
+        self.assertEqual(response.data.get("message"), "No question was found matching that ID")
 
     def test_valid_post(self):
         url = reverse('api-question')

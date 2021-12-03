@@ -193,11 +193,18 @@ class APIQuestion(APIView):
     def get(self, request):
         data = request.query_params
         if data.get("id"):
-            question_set = Question.objects.filter(id=data.get("id"))
-            if len(question_set) > 0:
-                serializer = QuestionSerializer(question_set[0])
+            questions = Question.objects.filter(id=data.get("id"))
+            if len(questions) > 0:
+                serializer = QuestionSerializer(questions[0])
                 return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response({"message": "No question set was found matching that ID"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "No question was found matching that ID"}, status=status.HTTP_404_NOT_FOUND)
+
+        elif data.get("set_id"):
+            questions = Question.objects.filter(set_id=data.get("set_id")).order_by("id")
+            if questions:
+                serializer = QuestionSerializer(questions[0])
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response({"message": "No questions for that set were found"}, status=status.HTTP_404_NOT_FOUND)
 
         return Response({"message": "ID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
