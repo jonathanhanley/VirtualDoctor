@@ -954,3 +954,48 @@ class TestIntegration(TestCase):
         url = reverse('api-login')
         token = client.post(url, data, format='json').data.get('token')
         self.assertIsNotNone(token)
+
+
+class TestIsConsulatant(TestCase):
+    def setUp(self) -> None:
+        user = User.objects.create_user(
+            username='testuser',
+            email='testuseremail@gmail.com',
+            password='testpassword1234',
+            code="12345"
+        )
+        self.user_token = Token.objects.create(
+            user=user
+        )
+        self.user_token.save()
+        user = User.objects.create_user(
+            username='testconsultant',
+            email='testconsultant@gmail.com',
+            password='testpassword1234'
+        )
+        self.consultant = Consultant.objects.create(
+            user=user,
+        )
+        user.code = self.consultant.code
+        user.save()
+        self.user = user
+        self.consultant.save()
+        self.consultant_token = Token.objects.create(
+            user=user
+        )
+        self.consultant_token.save()
+
+    def test_consultant_integration(self):
+
+        url = reverse('api-is-consultant')
+        data = {}
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.consultant_token.key)
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get("is_consultant"))
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION='Token ' + self.user_token.key)
+        response = client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertFalse(response.data.get("is_consultant"))

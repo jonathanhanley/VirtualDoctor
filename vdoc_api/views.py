@@ -13,6 +13,14 @@ from vdoc_api.serializers import UserSerializer, ConsultantSerializer, QuestionS
 
 User = get_user_model()
 
+class IsConsultant(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        return Response({'is_consultant': user.is_consultant})
+
 
 class DeleteToken(APIView):
     permission_classes = [IsAuthenticated]
