@@ -28,13 +28,13 @@ SECRET_KEY = 'django-insecure-2j9eggo%7^+e+x+4=wu!$gzsf=c&s0%n#huo!g3)s==55b*0x+
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'www.hanley.codes',
-    'http://hanley.codes',
-    'hanley.codes',
-    'http://hanley.codes',
     '188.166.30.96',
     'localhost',
     '192.168.1.30'
+    'jhanley.xyz',
+    'www.jhanley.xyz',
+    'http://www.jhanley.xyz',
+    'https://www.jhanley.xyz',
 ]
 
 
