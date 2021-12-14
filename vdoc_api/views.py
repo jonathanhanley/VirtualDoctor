@@ -288,7 +288,18 @@ class APIAnswer(APIView):
                 question_set = question_set.last()
                 user = user.last()
                 answers = Answer.objects.filter(question__set=question_set, user=user).order_by("id")
-                serializer = AnswerSerializer(answers, many=True)
+                answers_refined = []
+                for ans in answers[::-1]:
+                    found = False
+                    for ans_r in answers_refined:
+                        if ans.question.text == ans_r.question.text:
+                            found = True
+                    if not found:
+                        answers_refined.append(ans)
+
+                answers_refined.sort(key=lambda x: x.question.id)
+
+                serializer = AnswerSerializer(answers_refined, many=True)
                 return Response(serializer.data, status=status.HTTP_200_OK)
 
 
